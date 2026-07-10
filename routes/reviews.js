@@ -1,10 +1,16 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const router = express.Router();
-const config = require('../config.json');
 const { fetchReviews } = require('../services/steam');
 
+function loadConfig() {
+  const root = process.pkg ? path.dirname(process.execPath) : path.join(__dirname, '..');
+  return JSON.parse(fs.readFileSync(path.join(root, 'config.json'), 'utf8'));
+}
+
 router.get('/games', (_req, res) => {
-  res.json(config.games);
+  res.json(loadConfig().games);
 });
 
 router.get('/reviews', async (req, res) => {
