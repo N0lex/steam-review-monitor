@@ -1,0 +1,14 @@
+{
+  "name": "steam-review-monitor",
+  "version": "1.0.0",
+  "description": "Monitor Steam reviews across games",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/steam.test.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "open": "^8.4.2"
+  }
+}
