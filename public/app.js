@@ -16,10 +16,12 @@ function timeAgo(timestamp) {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
-function renderReview(review) {
+function renderReview(review, appId) {
   const cls = review.needsResponse ? 'review unanswered' : 'review';
   const icon = review.needsResponse ? '⚠' : '✓';
-  const thumb = review.thumbsUp ? '👍' : '👎';
+  const sentimentCls = review.thumbsUp ? 'sentiment pos' : 'sentiment neg';
+  const sentimentLabel = review.thumbsUp ? 'Recommended' : 'Not recommended';
+  const reviewUrl = `https://store.steampowered.com/app/${encodeURIComponent(appId)}/#review_${encodeURIComponent(review.id)}`;
   const responseHtml = review.needsResponse
     ? '<p class="no-response">No developer response</p>'
     : `<p class="dev-response">Dev: &ldquo;${escapeHtml(review.developerResponse)}&rdquo;</p>`;
@@ -28,8 +30,8 @@ function renderReview(review) {
     <div class="${cls}">
       <div class="review-header">
         <span class="review-icon">${icon}</span>
-        <span class="review-text">${escapeHtml(review.text)}</span>
-        <span class="review-meta">${thumb}&nbsp;${timeAgo(review.createdAt)}</span>
+        <span class="review-text"><a href="${escapeHtml(reviewUrl)}" target="_blank" rel="noreferrer">${escapeHtml(review.text)}</a></span>
+        <span class="review-meta"><span class="${sentimentCls}">${sentimentLabel}</span>&nbsp;${timeAgo(review.createdAt)}</span>
       </div>
       ${responseHtml}
     </div>
@@ -43,7 +45,10 @@ function createCard(game) {
   card.innerHTML = `
     <div class="card-header">
       <h2>${escapeHtml(game.name)}</h2>
-      <span class="badge hidden" data-badge></span>
+      <div class="card-header-right">
+        <span class="review-count hidden" data-review-count></span>
+        <span class="badge hidden" data-badge></span>
+      </div>
     </div>
     <div class="reviews-list" data-reviews></div>
     <div class="card-footer">
@@ -58,11 +63,13 @@ async function fillCard(card) {
   const appId = card.dataset.appId;
   const reviewsList = card.querySelector('[data-reviews]');
   const badge = card.querySelector('[data-badge]');
+  const reviewCount = card.querySelector('[data-review-count]');
   const showMoreBtn = card.querySelector('[data-show-more]');
 
   // Reset state
   reviewsList.innerHTML = '<div class="spinner"></div>';
   badge.classList.add('hidden');
+  reviewCount.classList.add('hidden');
   showMoreBtn.classList.add('hidden');
   delete card._reviews;
   delete card._shown;
@@ -78,14 +85,17 @@ async function fillCard(card) {
     card._reviews = [...data.reviews].sort((a, b) => b.needsResponse - a.needsResponse);
     card._shown = Math.min(PAGE_SIZE, card._reviews.length);
 
+    reviewCount.textContent = `${data.totalFetched} reviews`;
+    reviewCount.classList.remove('hidden');
+
     if (data.unansweredCount > 0) {
       badge.textContent = `${data.unansweredCount} need response`;
       badge.classList.remove('hidden');
     }
 
-    reviewsList.innerHTML = data.reviews
+    reviewsList.innerHTML = card._reviews
       .slice(0, card._shown)
-      .map(renderReview)
+      .map(r => renderReview(r, appId))
       .join('');
 
     if (data.reviews.length > PAGE_SIZE) {
@@ -102,7 +112,7 @@ function showMore(card) {
   card._shown = Math.min(card._shown + PAGE_SIZE, card._reviews.length);
   reviewsList.innerHTML = card._reviews
     .slice(0, card._shown)
-    .map(renderReview)
+    .map(r => renderReview(r, card.dataset.appId))
     .join('');
   if (card._shown >= card._reviews.length) {
     showMoreBtn.classList.add('hidden');
