@@ -113,8 +113,15 @@ async function init() {
   const container = document.getElementById('games-container');
   const refreshAllBtn = document.getElementById('refresh-all');
 
-  const res = await fetch('/api/games');
-  const games = await res.json();
+  let games;
+  try {
+    const res = await fetch('/api/games');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    games = await res.json();
+  } catch (err) {
+    container.innerHTML = `<p class="error">Could not load game list: ${escapeHtml(err.message)}</p>`;
+    return;
+  }
 
   const cards = games.map(game => {
     const card = createCard(game);
