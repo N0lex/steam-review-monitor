@@ -1,5 +1,8 @@
 {
   "games": [
+    { "appId": "831770", "name": "Zombie Derby" },
+    { "appId": "762590", "name": "Zombie Derby 2" },
+    { "appId": "1271690", "name": "Zombie Derby: Pixel Survival" },
     { "appId": "2435310", "name": "Stunt Paradise" }
   ]
 }
