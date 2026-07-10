@@ -21,6 +21,9 @@ function renderReview(review, appId) {
   const icon = review.needsResponse ? '⚠' : '✓';
   const sentimentCls = review.thumbsUp ? 'sentiment pos' : 'sentiment neg';
   const sentimentLabel = review.thumbsUp ? 'Recommended' : 'Not recommended';
+  const sentimentIcon = review.thumbsUp
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20h4V9H2v11zm20-10c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L13.17 1 6.59 7.59C6.22 7.95 6 8.45 6 9v9c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1z"/></svg>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 4h-4v11h4V4zM2 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L10.83 23l6.58-6.59c.37-.36.59-.86.59-1.41V6c0-1.1-.9-2-2-2H7c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v1z"/></svg>';
   const reviewUrl = `https://steamcommunity.com/profiles/${encodeURIComponent(review.author)}/recommended/${encodeURIComponent(appId)}`;
   const responseHtml = review.needsResponse
     ? '<p class="no-response">No developer response</p>'
@@ -31,7 +34,7 @@ function renderReview(review, appId) {
       <div class="review-header">
         <span class="review-icon">${icon}</span>
         <span class="review-text"><a href="${escapeHtml(reviewUrl)}" target="_blank" rel="noreferrer">${escapeHtml(review.text)}</a></span>
-        <span class="review-meta"><span class="${sentimentCls}">${sentimentLabel}</span>&nbsp;${timeAgo(review.createdAt)}</span>
+        <span class="review-meta"><span class="${sentimentCls}" role="img" aria-label="${sentimentLabel}" title="${sentimentLabel}">${sentimentIcon}</span>${timeAgo(review.createdAt)}</span>
       </div>
       ${responseHtml}
     </div>
@@ -75,7 +78,11 @@ async function fillCard(card) {
   delete card._shown;
 
   try {
-    const res = await fetch(`/api/reviews?appId=${encodeURIComponent(appId)}`);
+    const params = new URLSearchParams({
+      appId,
+      _: Date.now().toString(),
+    });
+    const res = await fetch(`/api/reviews?${params}`, { cache: 'no-store' });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || `HTTP ${res.status}`);
@@ -85,7 +92,10 @@ async function fillCard(card) {
     card._reviews = [...data.reviews].sort((a, b) => b.needsResponse - a.needsResponse);
     card._shown = Math.min(PAGE_SIZE, card._reviews.length);
 
-    reviewCount.textContent = `${data.totalFetched} reviews`;
+    const totalReviews = Number.isFinite(Number(data.totalReviews))
+      ? Number(data.totalReviews)
+      : data.totalFetched;
+    reviewCount.textContent = `${new Intl.NumberFormat().format(totalReviews)} reviews`;
     reviewCount.classList.remove('hidden');
 
     if (data.unansweredCount > 0) {
@@ -125,7 +135,11 @@ async function init() {
 
   let games;
   try {
-    const res = await fetch('/api/games');
+    const requestedIds = new URLSearchParams(window.location.search).get('id');
+    const gamesUrl = requestedIds
+      ? `/api/games?ids=${encodeURIComponent(requestedIds)}`
+      : '/api/games';
+    const res = await fetch(gamesUrl, { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     games = await res.json();
   } catch (err) {

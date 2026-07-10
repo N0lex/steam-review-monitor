@@ -35,6 +35,25 @@ header {
 
 h1 { font-size: 1.4rem; font-weight: 700; }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+}
+
+.brand-link img {
+  display: block;
+  width: auto;
+  height: 2rem;
+  max-width: 180px;
+  object-fit: contain;
+}
+
 /* ── Grid ────────────────────────────────────────── */
 #games-container {
   display: grid;
@@ -126,21 +145,28 @@ h1 { font-size: 1.4rem; font-weight: 700; }
 }
 
 .sentiment {
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 0.15rem 0.45rem;
-  border-radius: 999px;
-  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 2px;
+}
+
+.sentiment svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: currentColor;
 }
 
 .sentiment.pos {
-  background: rgba(42, 157, 143, 0.18);
-  color: #2a9d8f;
+  background: rgba(102, 192, 244, 0.2);
+  color: #66c0f4;
 }
 
 .sentiment.neg {
-  background: rgba(233, 69, 96, 0.18);
-  color: #e94560;
+  background: rgba(210, 74, 74, 0.24);
+  color: #e35d5d;
 }
 
 .review-text a {

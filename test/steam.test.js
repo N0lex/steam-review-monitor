@@ -1,11 +1,15 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { fetchReviews } = require('../services/steam');
+const { fetchGames, fetchReviews } = require('../services/steam');
 
-function makeFetcher(reviews = [], success = 1) {
+function makeFetcher(reviews = [], success = 1, totalReviews) {
   return async () => ({
     ok: true,
-    json: async () => ({ success, reviews }),
+    json: async () => ({
+      success,
+      reviews,
+      ...(totalReviews === undefined ? {} : { query_summary: { total_reviews: totalReviews } }),
+    }),
   });
 }
 
@@ -23,6 +27,27 @@ function makeReview(overrides = {}) {
     ...overrides,
   };
 }
+
+test('fetches game names for custom app IDs', async () => {
+  const fetcher = async url => {
+    const appId = new URL(url).searchParams.get('appids');
+    return {
+      ok: true,
+      json: async () => ({ [appId]: { success: true, data: { name: `Game ${appId}` } } }),
+    };
+  };
+  const games = await fetchGames(['10', '20'], fetcher);
+  assert.deepEqual(games, [
+    { appId: '10', name: 'Game 10' },
+    { appId: '20', name: 'Game 20' },
+  ]);
+});
+
+test('falls back to the app ID when Steam game details are unavailable', async () => {
+  const fetcher = async () => ({ ok: false, status: 503 });
+  const games = await fetchGames(['999'], fetcher);
+  assert.deepEqual(games, [{ appId: '999', name: 'Steam App 999' }]);
+});
 
 test('marks review with empty developer_response as needsResponse', async () => {
   const fetcher = makeFetcher([makeReview({ developer_response: '' })]);
@@ -46,6 +71,13 @@ test('counts unansweredCount correctly', async () => {
   const result = await fetchReviews('2435310', fetcher);
   assert.equal(result.unansweredCount, 2);
   assert.equal(result.totalFetched, 3);
+});
+
+test('returns the total review count from Steam query_summary', async () => {
+  const fetcher = makeFetcher([makeReview()], 1, 12345);
+  const result = await fetchReviews('2435310', fetcher);
+  assert.equal(result.totalFetched, 1);
+  assert.equal(result.totalReviews, 12345);
 });
 
 test('does not mark review older than 30 days as needsResponse even without dev response', async () => {
