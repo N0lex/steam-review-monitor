@@ -22,7 +22,7 @@ async function fetchReviews(appId, fetcher = globalThis.fetch) {
     thumbsUp: r.voted_up,
     createdAt: r.timestamp_created,
     developerResponse: r.developer_response || '',
-    needsResponse: !r.developer_response,
+    needsResponse: !r.developer_response && (Date.now() / 1000 - r.timestamp_created) < 30 * 24 * 60 * 60,
   }));
 
   return {

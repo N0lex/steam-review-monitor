@@ -75,8 +75,8 @@ async function fillCard(card) {
     }
     const data = await res.json();
 
-    card._reviews = data.reviews;
-    card._shown = Math.min(PAGE_SIZE, data.reviews.length);
+    card._reviews = [...data.reviews].sort((a, b) => b.needsResponse - a.needsResponse);
+    card._shown = Math.min(PAGE_SIZE, card._reviews.length);
 
     if (data.unansweredCount > 0) {
       badge.textContent = `${data.unansweredCount} need response`;

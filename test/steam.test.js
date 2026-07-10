@@ -9,12 +9,15 @@ function makeFetcher(reviews = [], success = 1) {
   });
 }
 
+const RECENT_TS = Math.floor(Date.now() / 1000) - 60; // 1 minute ago
+const OLD_TS = Math.floor(Date.now() / 1000) - 31 * 24 * 60 * 60; // 31 days ago
+
 function makeReview(overrides = {}) {
   return {
     recommendationid: '111',
     author: { steamid: '76561198000000000' },
     review: 'Great game',
-    timestamp_created: 1720000000,
+    timestamp_created: RECENT_TS,
     voted_up: true,
     developer_response: '',
     ...overrides,
@@ -43,6 +46,13 @@ test('counts unansweredCount correctly', async () => {
   const result = await fetchReviews('2435310', fetcher);
   assert.equal(result.unansweredCount, 2);
   assert.equal(result.totalFetched, 3);
+});
+
+test('does not mark review older than 30 days as needsResponse even without dev response', async () => {
+  const fetcher = makeFetcher([makeReview({ developer_response: '', timestamp_created: OLD_TS })]);
+  const result = await fetchReviews('2435310', fetcher);
+  assert.equal(result.reviews[0].needsResponse, false);
+  assert.equal(result.unansweredCount, 0);
 });
 
 test('maps thumbsUp from voted_up', async () => {
