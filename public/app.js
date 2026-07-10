@@ -21,7 +21,7 @@ function renderReview(review, appId) {
   const icon = review.needsResponse ? '⚠' : '✓';
   const sentimentCls = review.thumbsUp ? 'sentiment pos' : 'sentiment neg';
   const sentimentLabel = review.thumbsUp ? 'Recommended' : 'Not recommended';
-  const reviewUrl = `https://store.steampowered.com/app/${encodeURIComponent(appId)}/#review_${encodeURIComponent(review.id)}`;
+  const reviewUrl = `https://steamcommunity.com/profiles/${encodeURIComponent(review.author)}/recommended/${encodeURIComponent(appId)}`;
   const responseHtml = review.needsResponse
     ? '<p class="no-response">No developer response</p>'
     : `<p class="dev-response">Dev: &ldquo;${escapeHtml(review.developerResponse)}&rdquo;</p>`;
