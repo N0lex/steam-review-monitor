@@ -1,0 +1,19 @@
+STEAM REVIEW MONITOR - PHP 5.6+ INSTALLATION
+
+1. Upload every file from this folder to a web-accessible folder on your server.
+2. Keep index.html, app.js, style.css, api.php and config.json together.
+3. Open that folder through your domain. No command-line installation is required.
+
+Default games come from config.json.
+
+Custom games can be selected through the URL:
+https://your-domain.example/path/?id=762590,2435310
+
+Requirements:
+- PHP 5.6 or newer
+- PHP cURL extension
+- Outbound HTTPS access to store.steampowered.com
+
+Security:
+- Do not upload php-check.php or other diagnostic files.
+- PHP 5.6 is obsolete; upgrade the server when practical.
