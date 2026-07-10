@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test test/steam.test.js",
-    "build:win": "pkg . --targets node18-win-x64 --output dist/steam-review-monitor.exe --compress GZip"
+    "build:win": "pkg . --targets node18-win-x64 --output dist/steam-review-monitor.exe --compress GZip",
+    "package": "npm run build:win && zip -r dist/steam-review-monitor-windows.zip dist/steam-review-monitor.exe public/ config.json && echo 'Done: dist/steam-review-monitor-windows.zip'"
   },
   "dependencies": {
     "express": "^4.18.2",
