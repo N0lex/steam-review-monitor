@@ -17,7 +17,7 @@ async function fetchReviews(appId, fetcher = globalThis.fetch) {
 
   const reviews = (data.reviews || []).map(r => ({
     id: r.recommendationid,
-    author: r.author.steamid,
+    author: r.author?.steamid ?? '',
     text: r.review,
     thumbsUp: r.voted_up,
     createdAt: r.timestamp_created,
